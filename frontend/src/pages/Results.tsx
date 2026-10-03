@@ -26,6 +26,7 @@ import { Card, CardHeader, CardBody } from "../components/ui/Card";
 import { Skeleton } from "../components/ui/Skeleton";
 import { useToast } from "../components/ui/Toast";
 import { copyToClipboard } from "../utils/clipboard";
+import { getApiUrl } from "../api/client";
 
 export const Results: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -65,7 +66,7 @@ export const Results: React.FC = () => {
       showToast("Export generated! Downloading...", "success");
       setShowExportMenu(false);
       // Trigger download
-      window.location.href = data.download_url;
+      window.location.href = getApiUrl(data.download_url);
     },
     onError: (err: any) => {
       showToast(err.message || "Failed to generate export", "error");
@@ -127,7 +128,7 @@ export const Results: React.FC = () => {
   };
 
   const handleDownloadPDF = (submissionId: string) => {
-    window.location.href = `/api/export/single/${submissionId}/pdf`;
+    window.location.href = getApiUrl(`/api/export/single/${submissionId}/pdf`);
   };
 
   const rows = resultsData?.items || [];

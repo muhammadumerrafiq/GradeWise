@@ -3,6 +3,7 @@ GradeWise — FastAPI Application Entry Point
 """
 
 from contextlib import asynccontextmanager
+import os
 import structlog
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -37,6 +38,8 @@ log = structlog.get_logger()
 async def lifespan(app: FastAPI):
     """Startup and shutdown lifecycle."""
     log.info("GradeWise starting up")
+    os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
+    os.makedirs(settings.EXPORT_DIR, exist_ok=True)
     settings.create_directories()
     log.info("Directories verified", upload=settings.UPLOAD_DIR, export=settings.EXPORT_DIR)
 
@@ -68,7 +71,7 @@ app = FastAPI(
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_origins=settings.allowed_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -124,7 +127,8 @@ async def general_exception_handler(request: Request, exc: Exception):
     )
 
 
-# Health check endpoint
+# Health check endpoints (root /health for Railway, /api/health for internal/API)
+@app.get("/health")
 @app.get("/api/health")
 async def health_check():
     """Health check endpoint. Does NOT expose API key or secrets."""

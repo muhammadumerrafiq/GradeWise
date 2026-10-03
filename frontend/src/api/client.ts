@@ -7,7 +7,15 @@
 import axios, { AxiosError } from "axios";
 import type { ApiError } from "../types";
 
-const BASE_URL = (import.meta as any).env?.VITE_API_URL || "";
+export const BASE_URL = (import.meta as any).env?.VITE_API_URL || "http://localhost:8000";
+
+export const getApiUrl = (path: string): string => {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  const base = BASE_URL.endsWith("/") ? BASE_URL.slice(0, -1) : BASE_URL;
+  const cleanPath = path.startsWith("/") ? path : `/${path}`;
+  return `${base}${cleanPath}`;
+};
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,

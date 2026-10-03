@@ -34,19 +34,18 @@ class Settings(BaseSettings):
 
     # Security
     SECRET_KEY: str = "gradewise_default_secret_key_change_in_production"
-    ALLOWED_ORIGINS: Union[str, List[str]] = ["http://localhost:5173", "http://127.0.0.1:5173"]
+    ALLOWED_ORIGINS: str = "http://localhost:5173,http://127.0.0.1:5173"
 
     # Server
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     DEBUG: bool = True
 
-    @field_validator("ALLOWED_ORIGINS", mode="before")
-    @classmethod
-    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
-        if isinstance(v, str):
-            return [i.strip() for i in v.split(",") if i.strip()]
-        return v
+    @property
+    def allowed_origins_list(self) -> List[str]:
+        if isinstance(self.ALLOWED_ORIGINS, list):
+            return self.ALLOWED_ORIGINS
+        return [o.strip() for o in str(self.ALLOWED_ORIGINS).split(",") if o.strip()]
 
     class Config:
         env_file = ".env"

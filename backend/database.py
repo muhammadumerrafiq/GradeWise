@@ -45,13 +45,29 @@ class GUID(TypeDecorator):
 
 
 
-# SQLite async engine configuration
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.DEBUG,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
+DATABASE_URL = settings.DATABASE_URL
+# Automatically normalize Railway postgres:// or postgresql:// to postgresql+asyncpg://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
+elif DATABASE_URL.startswith("postgresql://") and not DATABASE_URL.startswith("postgresql+"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+
+if DATABASE_URL.startswith("sqlite"):
+    # Local development — SQLite
+    engine = create_async_engine(
+        DATABASE_URL,
+        echo=settings.DEBUG,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+else:
+    # Production — PostgreSQL
+    engine = create_async_engine(
+        DATABASE_URL,
+        echo=False,
+        pool_size=10,
+        max_overflow=20,
+    )
 
 
 # Session factory
@@ -82,12 +98,13 @@ async def create_tables():
     async with engine.begin() as conn:
         import models  # Ensure all models are registered
         await conn.run_sync(Base.metadata.create_all)
-        # Safe column addition for existing databases
-        try:
-            from sqlalchemy import text
-            await conn.execute(text("ALTER TABLE assignments ADD COLUMN feedback_instructions TEXT;"))
-        except Exception:
-            pass  # Already exists or database doesn't require alteration
+        # Safe column addition for existing SQLite databases
+        if DATABASE_URL.startswith("sqlite"):
+            try:
+                from sqlalchemy import text
+                await conn.execute(text("ALTER TABLE assignments ADD COLUMN feedback_instructions TEXT;"))
+            except Exception:
+                pass  # Already exists or database doesn't require alteration
 
     # Seed initial data
     from models.assignment import Teacher

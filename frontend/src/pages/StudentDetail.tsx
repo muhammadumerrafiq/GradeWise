@@ -29,6 +29,7 @@ import { ProgressBar } from "../components/ui/ProgressBar";
 import { Skeleton } from "../components/ui/Skeleton";
 import { useToast } from "../components/ui/Toast";
 import { copyToClipboard } from "../utils/clipboard";
+import { getApiUrl } from "../api/client";
 import type { CriterionScore, EnglishSeverity } from "../types";
 
 export const StudentDetail: React.FC = () => {
@@ -664,7 +665,7 @@ export const StudentDetail: React.FC = () => {
                 <button
                   onClick={() => {
                     setShowDownloadMenu(false);
-                    window.location.href = `/api/export/single/${evaluation.submission_id}/pdf`;
+                    window.location.href = getApiUrl(`/api/export/single/${evaluation.submission_id}/pdf`);
                   }}
                   className="w-full text-left px-3 py-2 hover:bg-background text-text-primary"
                 >
@@ -673,7 +674,7 @@ export const StudentDetail: React.FC = () => {
                 <button
                   onClick={() => {
                     setShowDownloadMenu(false);
-                    window.location.href = `/api/export/single/${evaluation.submission_id}/docx`;
+                    window.location.href = getApiUrl(`/api/export/single/${evaluation.submission_id}/docx`);
                   }}
                   className="w-full text-left px-3 py-2 hover:bg-background text-text-primary"
                 >

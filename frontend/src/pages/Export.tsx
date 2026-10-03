@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Download, FileSpreadsheet, FileText, FileArchive, CheckSquare, Clock } from "lucide-react";
 import { getAssignment, getResults, listExports, createExport } from "../api";
+import { getApiUrl } from "../api/client";
 import { Button } from "../components/ui/Button";
 import { Card, CardHeader, CardBody } from "../components/ui/Card";
 import { useToast } from "../components/ui/Toast";
@@ -59,7 +60,7 @@ export const ExportPage: React.FC = () => {
     onSuccess: (data) => {
       showToast("Export file generated! Starting download...", "success");
       queryClient.invalidateQueries({ queryKey: ["exports", id] });
-      window.location.href = data.download_url;
+      window.location.href = getApiUrl(data.download_url);
     },
     onError: (err: any) => {
       showToast(err.message || "Failed to generate export", "error");
@@ -267,7 +268,7 @@ export const ExportPage: React.FC = () => {
                     </td>
                     <td className="px-5 py-3 text-right">
                       <a
-                        href={rec.download_url}
+                        href={getApiUrl(rec.download_url)}
                         className="inline-flex items-center gap-1 text-accent font-medium hover:underline"
                       >
                         <Download className="w-3.5 h-3.5" /> Download
